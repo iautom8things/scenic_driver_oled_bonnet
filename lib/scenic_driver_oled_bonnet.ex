@@ -7,52 +7,59 @@ defmodule ScenicDriverOLEDBonnet do
   @gpio_config [
     # Joystick press
     %{
-      pin: 4,
+      pin: 13,
       pull_mode: :pullup,
       low: {:key, {" ", :press, 0}},
       high: {:key, {" ", :release, 0}}
     },
     # Joystick up
     %{
-      pin: 17,
+      pin: 6,
       pull_mode: :pullup,
       low: {:key, {"up", :press, 0}},
       high: {:key, {"up", :release, 0}}
     },
     # Joystick right
     %{
-      pin: 23,
+      pin: 26,
       pull_mode: :pullup,
       low: {:key, {"right", :press, 0}},
       high: {:key, {"right", :release, 0}}
     },
     # Joystick down
     %{
-      pin: 22,
+      pin: 19,
       pull_mode: :pullup,
       low: {:key, {"down", :press, 0}},
       high: {:key, {"down", :release, 0}}
     },
     # Joystick left
     %{
-      pin: 27,
+      pin: 5,
       pull_mode: :pullup,
       low: {:key, {"left", :press, 0}},
       high: {:key, {"left", :release, 0}}
     },
-    # #5
+    # key_1
     %{
-      pin: 5,
+      pin: 21,
       pull_mode: :pullup,
       low: {:key, {"A", :press, 0}},
       high: {:key, {"A", :release, 0}}
     },
-    # #6
+    # key_2
     %{
-      pin: 6,
+      pin: 20,
       pull_mode: :pullup,
       low: {:key, {"S", :press, 0}},
       high: {:key, {"S", :release, 0}}
+    },
+    # key_3
+    %{
+      pin: 16,
+      pull_mode: :pullup,
+      low: {:key, {"D", :press, 0}},
+      high: {:key, {"D", :release, 0}}
     }
   ]
 
@@ -64,16 +71,18 @@ defmodule ScenicDriverOLEDBonnet do
     {:ok, _} =
       Driver.start_link({vp_supervisor, size, %{module: ScenicDriverGPIO, opts: @gpio_config}})
 
-    {:ok, i2c} = Circuits.I2C.open("i2c-1")
+    {:ok, pid} = SH1106.start_link([])
+    SH1106.power_on()
+    SH1106.show(<<0::8192>>)
+    SH1106.invert()
+    SH1106.invert()
     {:ok, cap} = RpiFbCapture.start_link(width: 128, height: 64, display: 0)
 
-    SSD1306.init(i2c)
     send(self(), :capture)
 
     {:ok,
      %{
        viewport: viewport,
-       i2c: i2c,
        cap: cap,
        last_crc: -1
      }}
@@ -86,7 +95,7 @@ defmodule ScenicDriverOLEDBonnet do
     crc = :erlang.crc32(frame.data)
 
     if crc != state.last_crc do
-      SSD1306.display(state.i2c, frame.data)
+      SH1106.show(frame.data)
     end
 
     Process.send_after(self(), :capture, 50)

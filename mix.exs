@@ -21,10 +21,10 @@ defmodule ScenicDriverOLEDBonnet.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:scenic, "~> 0.9"},
+      {:scenic, "~> 0.10"},
       {:scenic_driver_gpio, "~> 0.1"},
       {:scenic_driver_nerves_rpi, "~> 0.9"},
-      {:ssd1306, "~> 0.1", github: "nerves-training/ssd1306"},
+      {:sh1106, "~> 0.1.0", github: "iautom8things/sh1106"},
       {:rpi_fb_capture, "~> 0.1"}
     ]
   end
